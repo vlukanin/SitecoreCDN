@@ -1,33 +1,29 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using HtmlAgilityPack;
-using Sitecore.Text;
-using Sitecore;
-using Sitecore.Configuration;
-using System.Text.RegularExpressions;
-using Sitecore.Data.Items;
-using Sitecore.IO;
-using Sitecore.Web;
-using Sitecore.Resources.Media;
-using System.Reflection;
-using Sitecore.Reflection;
-using NTTData.SitecoreCDN.Caching;
-using NTTData.SitecoreCDN.Providers;
-using Sitecore.Sites;
-using System.Collections.Specialized;
-
-namespace NTTData.SitecoreCDN
+﻿namespace NTTData.SitecoreCDN
 {
+    using System.IO;
+    using System.Text;
+    using System.Web;
+    using System.Web.UI;
+    using HtmlAgilityPack;
+    using NTTData.SitecoreCDN.Configuration;
+    using NTTData.SitecoreCDN.Providers;
+    using Sitecore;
+    using Sitecore.Configuration;
+    using Sitecore.Data.Items;
+    using Sitecore.Sites;
+
     /// <summary>
     /// Static manager wrapper for CDNProvider
     /// </summary>
     public static class CDNManager
     {
-
-
         private static CDNProvider _provider;
+
+        static CDNManager()
+        {
+            _provider = Factory.CreateObject("cdn/provider", true) as CDNProvider;
+        }
+
         /// <summary>
         /// Cloud Front Provider
         /// </summary>
@@ -38,8 +34,6 @@ namespace NTTData.SitecoreCDN
                 return _provider;
             }
         }
-
-
 
         public static string StopToken
         {
@@ -56,19 +50,13 @@ namespace NTTData.SitecoreCDN
         {
             get
             {
-                return (MainUtil.GetBool(Sitecore.Context.Items["sc_IsCdnRequest"], false));
+                return MainUtil.GetBool(Sitecore.Context.Items["sc_IsCdnRequest"], false);
             }
+
             set
             {
                 Sitecore.Context.Items["sc_IsCdnRequest"] = value;
             }
-        }
-
-
-
-        static CDNManager()
-        {
-            _provider = Factory.CreateObject("cdn/provider", true) as CDNProvider;
         }
 
         /// <summary>
@@ -90,9 +78,6 @@ namespace NTTData.SitecoreCDN
         {
             return _provider.ReplaceMediaUrl(inputUrl, cdnHostname);
         }
-
-        
-
 
         /// <summary>
         /// Tells you if the url is excluded by ExcludeUrlPatterns in .config
@@ -154,8 +139,6 @@ namespace NTTData.SitecoreCDN
             return _provider.GetCDNHostName(siteContext);
         }
 
-        
-
         /// <summary>
         /// Is this media item publicly accessible by the anonymous user?
         /// </summary>
@@ -176,5 +159,30 @@ namespace NTTData.SitecoreCDN
             return _provider.IsMediaAnalyticsTracked(media);
         }
 
+        public static bool IsAjaxRequest()
+        {
+            return (HttpContext.Current.Request["X-Requested-With"] == "XMLHttpRequest") || (HttpContext.Current.Request.Headers["X-Requested-With"] == "XMLHttpRequest");
+        }
+
+        public static string ReplaceMediaUrls(string content)
+        {
+            if (IsAjaxRequest() && CDNSettings.Enabled && !string.IsNullOrEmpty(GetCDNHostName()))
+            {
+                var doc = new HtmlDocument();
+                doc.LoadHtml(content);
+
+                ReplaceMediaUrls(doc);
+
+                var cdnStringBuilder = new StringBuilder();
+                var cdnTextWriter = new StringWriter(cdnStringBuilder);
+                var cdnHtmlWriter = new HtmlTextWriter(cdnTextWriter);
+
+                doc.Save(cdnHtmlWriter);
+
+                content = cdnStringBuilder.ToString();
+            }
+
+            return content;
+        }
     }
 }

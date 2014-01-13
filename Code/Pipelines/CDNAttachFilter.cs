@@ -1,20 +1,12 @@
-﻿using Sitecore.Pipelines.HttpRequest;
-using System.Web;
-using NTTData.SitecoreCDN.Filters;
-using NTTData.SitecoreCDN.Configuration;
-using Sitecore.Web;
-using Sitecore;
-using System.Linq;
-using Sitecore.Resources.Media;
-using NTTData.SitecoreCDN.Providers;
-using Sitecore.Diagnostics;
-using Sitecore.Configuration;
-using NTTData.SitecoreCDN.Handlers;
-using System;
-
-namespace NTTData.SitecoreCDN.Pipelines
+﻿namespace NTTData.SitecoreCDN.Pipelines
 {
-
+    using System.Web;
+    using NTTData.SitecoreCDN.Configuration;
+    using NTTData.SitecoreCDN.Filters;
+    using Sitecore;
+    using Sitecore.Diagnostics;
+    using Sitecore.Pipelines.HttpRequest;
+    using Sitecore.Web;
 
     /// <summary>
     /// HttpRequest Pipeline step to attach the media url replacer filter
@@ -26,7 +18,9 @@ namespace NTTData.SitecoreCDN.Pipelines
             Assert.ArgumentNotNull(args, "args");
 
             if (!CDNSettings.Enabled)
+            {
                 return;
+            }
 
             bool shouldFilter = (Sitecore.Context.Item != null || CDNManager.ShouldProcessRequest(args.Url.FilePathWithQueryString)) &&   // if an item is resolved (this is a page request) or file ext is listed in <processRequests>
                                 !CDNManager.ShouldExcludeProcessRequest(args.Url.FilePathWithQueryString) && // if the url is not on the excluded list
@@ -38,9 +32,13 @@ namespace NTTData.SitecoreCDN.Pipelines
             // querystring cdn=0  to force no replacement
             Tristate force = MainUtil.GetTristate(WebUtil.GetQueryString("cdn"), Tristate.Undefined);
             if (force == Tristate.False)
+            {
                 shouldFilter = false;
+            }
             else if (force == Tristate.True)
+            {
                 shouldFilter = true;
+            }
 
             if (shouldFilter)
             {
@@ -51,11 +49,6 @@ namespace NTTData.SitecoreCDN.Pipelines
                     response.Filter = new MediaUrlFilter(response.Filter);
                 }
             }
-
-
-
-
-
         }
     }
 }

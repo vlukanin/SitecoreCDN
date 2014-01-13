@@ -1,20 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Sitecore.Pipelines.HttpRequest;
-using Sitecore;
-using Sitecore.Pipelines.PreprocessRequest;
-using Sitecore.Web;
-using Sitecore.Diagnostics;
-using Sitecore.Configuration;
-using NTTData.SitecoreCDN.Handlers;
-using NTTData.SitecoreCDN.Configuration;
-using Sitecore.Text;
-using Sitecore.Resources.Media;
-
-namespace NTTData.SitecoreCDN.Pipelines
+﻿namespace NTTData.SitecoreCDN.Pipelines
 {
+    using Sitecore.Pipelines.PreprocessRequest;
+    using Sitecore.Diagnostics;
+    using Sitecore.Configuration;
+    using NTTData.SitecoreCDN.Configuration;
+    using Sitecore.Text;
 
     public class CDNInterceptPipeline : PreprocessRequestProcessor
     {
@@ -28,7 +18,7 @@ namespace NTTData.SitecoreCDN.Pipelines
 
             // rehydrate original url
             string fullPath = Sitecore.Context.RawUrl;
-            UrlString url = new UrlString(fullPath);
+            var url = new UrlString(fullPath);
 
             // if this item is a minifiable css or js
             // rewrite for ~/minify handler
@@ -39,12 +29,14 @@ namespace NTTData.SitecoreCDN.Pipelines
                 (url.Path.EndsWith(".css") || url.Path.EndsWith(".js")))
             {
                 args.Context.Items["MinifyPath"] = fullPath;   // set this for the Minifier handler
-                args.Context.RewritePath("/~/minify" + url.Path, "", url.Query);  // rewrite with ~/minify to trigger custom handler
+                args.Context.RewritePath("/~/minify" + url.Path, string.Empty, url.Query);  // rewrite with ~/minify to trigger custom handler
             }
-            else
-            {
-                args.Context.RewritePath(url.Path, "", url.Query); // rewrite proper url
-            }
+
+            // NOTE: DOREL CHANGE: Commented to make WCF services (*.svc) workable
+//            else
+//            {
+//                args.Context.RewritePath(url.Path, string.Empty, url.Query); // rewrite proper url
+//            }
         }
     }
 }

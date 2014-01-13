@@ -1,33 +1,33 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Web;
-using Sitecore.Web;
-using Sitecore.SecurityModel.Cryptography;
-using Sitecore.IO;
-using Sitecore;
-using Sitecore.Diagnostics;
-using System.Text.RegularExpressions;
-using NTTData.SitecoreCDN.Minifiers;
-using Sitecore.Text;
-using NTTData.SitecoreCDN.Configuration;
-
-namespace NTTData.SitecoreCDN.Handlers
+﻿namespace NTTData.SitecoreCDN.Handlers
 {
+    using System;
+    using System.Text.RegularExpressions;
+    using System.Web;
+    using NTTData.SitecoreCDN.Configuration;
+    using NTTData.SitecoreCDN.Minifiers;
+    using NTTData.SitecoreCDN.Providers;
+    using Sitecore;
+    using Sitecore.Diagnostics;
+    using Sitecore.IO;
+    using Sitecore.SecurityModel.Cryptography;
+    using Sitecore.Text;
+    using Sitecore.Web;
+
     /// <summary>
     /// This handler will minify .js and .css file requests.
     /// </summary>
     public class MinifyHandler : IHttpHandler
     {
+        private bool _success = false;
+
         public bool IsReusable
         {
             get { return true; }
         }
-        private bool _success = false;
+
         public virtual bool Success
         {
-            get { return _success; }
+            get { return this._success; }
         }
 
         public void ProcessRequest(HttpContext context)
@@ -41,8 +41,7 @@ namespace NTTData.SitecoreCDN.Handlers
                 context.Response.End();
             }
             
-            
-            UrlString url = new UrlString(minifyPath);
+            var url = new UrlString(minifyPath);
             string localPath = url.Path;
 
             string filePath = FileUtil.MapPath(localPath);
@@ -50,7 +49,7 @@ namespace NTTData.SitecoreCDN.Handlers
             // if the request is a .js file
             if (localPath.EndsWith(".js"))
             {
-                HashEncryption hasher = new HashEncryption(HashEncryption.EncryptionProvider.MD5);
+                var hasher = new HashEncryption(HashEncryption.EncryptionProvider.MD5);
                 if (!string.IsNullOrEmpty(localPath))
                 {
                     // generate a unique filename for the cached .js version
@@ -62,7 +61,7 @@ namespace NTTData.SitecoreCDN.Handlers
                         // if the original file exsits minify it
                         if (FileUtil.FileExists(filePath))
                         {
-                            JsMinifier minifier = new JsMinifier();
+                            var minifier = new JsMinifier();
                             string minified = minifier.Minify(filePath);
                             FileUtil.WriteToFile(cachedFilePath, minified);
                         }
@@ -75,14 +74,14 @@ namespace NTTData.SitecoreCDN.Handlers
                         context.Response.AddHeader("Content-Type", "application/x-javascript; charset=utf-8");
                         context.Response.WriteFile(cachedFilePath);
                         context.Response.End();
-                        _success = true;
+                        this._success = true;
                     }
                 }
             }
             // if the request is a .css file
             else if (localPath.EndsWith(".css"))
             {
-                HashEncryption hasher = new HashEncryption(HashEncryption.EncryptionProvider.MD5);
+                var hasher = new HashEncryption(HashEncryption.EncryptionProvider.MD5);
                 if (!string.IsNullOrEmpty(localPath))
                 {
                     // generate a unique filename for the cached .css version
@@ -101,32 +100,37 @@ namespace NTTData.SitecoreCDN.Handlers
                             if (CDNSettings.ProcessCss)
                             {
                                 // find all css occurences of url([url])
-                                Regex reReplaceUrl = new Regex("url\\(\\s*['\"]?([^\"')]+)['\"]?\\s*\\)");
+                                var regReplaceUrl = new Regex(CDNProvider.CssUrlRegexPattern);
 
                                 try
                                 {
                                     // replacing  url([url]) with url([cdnUrl]) in css
-                                    minified = reReplaceUrl.Replace(minified, (m) =>
-                                    {
-                                        string oldUrl = "";
-                                        if (m.Groups.Count > 1)
-                                            oldUrl = m.Groups[1].Value;
-
-                                        if (WebUtil.IsInternalUrl(oldUrl))
-                                        {
-                                            if (oldUrl.StartsWith("."))
+                                    minified = regReplaceUrl.Replace(
+                                        minified,
+                                        (m) =>
                                             {
-                                                oldUrl = VirtualPathUtility.Combine(url.Path, oldUrl);
-                                            }
-                                            string newUrl = CDNManager.ReplaceMediaUrl(oldUrl, string.Empty);
-                                            if (!string.IsNullOrEmpty(newUrl))
-                                            {
-                                                return m.Value.Replace(m.Groups[1].Value, newUrl);
-                                            }
-                                        }
+                                                string oldUrl = string.Empty;
+                                                if (m.Groups.Count > 1)
+                                                {
+                                                    oldUrl = m.Groups[1].Value;
+                                                }
 
-                                        return m.Value;
-                                    });
+                                                if (WebUtil.IsInternalUrl(oldUrl))
+                                                {
+                                                    if (oldUrl.StartsWith("."))
+                                                    {
+                                                        oldUrl = VirtualPathUtility.Combine(url.Path, oldUrl);
+                                                    }
+
+                                                    string newUrl = CDNManager.ReplaceMediaUrl(oldUrl, string.Empty);
+                                                    if (!string.IsNullOrEmpty(newUrl))
+                                                    {
+                                                        return m.Value.Replace(m.Groups[1].Value, newUrl);
+                                                    }
+                                                }
+
+                                                return m.Value;
+                                            });
                                 }
                                 catch (Exception ex)
                                 {
@@ -145,17 +149,10 @@ namespace NTTData.SitecoreCDN.Handlers
                         context.Response.AddHeader("Content-Type", "text/css; charset=utf-8");
                         context.Response.TransmitFile(cachedFilePath);
                         context.Response.End();
-                        _success = true;
+                        this._success = true;
                     }
                 }
             }
-
-
-
-
-
-
-
         }
     }
 }

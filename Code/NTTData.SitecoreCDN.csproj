@@ -5,7 +5,7 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{318BBE79-ACF4-46DF-9747-CBBF66A0CBBC}</ProjectGuid>
+    <ProjectGuid>{E997EA8E-1BC8-43F2-BDB9-BFBE6C0E3D72}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>NTTData.SitecoreCDN</RootNamespace>
@@ -66,7 +66,6 @@
     <Compile Include="Switchers\CDNUrlSwitcher.cs" />
     <Compile Include="Util\TimerReport.cs" />
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

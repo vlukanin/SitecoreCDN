@@ -1,18 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.IO;
-
-namespace NTTData.SitecoreCDN.Minifiers
+﻿namespace NTTData.SitecoreCDN.Minifiers
 {
+    using System;
+    using System.IO;
+
     /// <summary>
     /// Javascript Minifier
     /// </summary>
     public class JsMinifier
     {
-
-
         const int EOF = -1;
 
         StreamReader sr;
@@ -20,9 +15,6 @@ namespace NTTData.SitecoreCDN.Minifiers
         int theA;
         int theB;
         int theLookahead = EOF;
-
-
-        
 
         public string Minify(Stream stream) //removed the out file path
         {
@@ -63,14 +55,7 @@ namespace NTTData.SitecoreCDN.Minifiers
                 {
                     case ' ':
                         {
-                            if (isAlphanum(theB))
-                            {
-                                action(1);
-                            }
-                            else
-                            {
-                                action(2);
-                            }
+                            action(isAlphanum(theB) ? 1 : 2);
                             break;
                         }
                     case '\n':
@@ -93,14 +78,7 @@ namespace NTTData.SitecoreCDN.Minifiers
                                     }
                                 default:
                                     {
-                                        if (isAlphanum(theB))
-                                        {
-                                            action(1);
-                                        }
-                                        else
-                                        {
-                                            action(2);
-                                        }
+                                        action(isAlphanum(theB) ? 1 : 2);
                                         break;
                                     }
                             }
@@ -137,14 +115,7 @@ namespace NTTData.SitecoreCDN.Minifiers
                                                 }
                                             default:
                                                 {
-                                                    if (isAlphanum(theA))
-                                                    {
-                                                        action(1);
-                                                    }
-                                                    else
-                                                    {
-                                                        action(3);
-                                                    }
+                                                    action(isAlphanum(theA) ? 1 : 3);
                                                     break;
                                                 }
                                         }
@@ -161,6 +132,7 @@ namespace NTTData.SitecoreCDN.Minifiers
                 }
             }
         }
+
         /* action -- do something! What you do is determined by the argument:
                 1   Output A. Copy B to A. Get the next B.
                 2   Copy B to A. Get the next B. (Delete A).
@@ -174,6 +146,7 @@ namespace NTTData.SitecoreCDN.Minifiers
             {
                 put(theA);
             }
+
             if (d <= 2)
             {
                 theA = theB;
@@ -199,6 +172,7 @@ namespace NTTData.SitecoreCDN.Minifiers
                     }
                 }
             }
+
             if (d <= 3)
             {
                 theB = next();
@@ -232,6 +206,7 @@ namespace NTTData.SitecoreCDN.Minifiers
                 }
             }
         }
+
         /* next -- get the next character, excluding comments. peek() is used to see
                 if a '/' is followed by a '/' or '*'.
         */
@@ -284,6 +259,7 @@ namespace NTTData.SitecoreCDN.Minifiers
             }
             return c;
         }
+
         /* peek -- get the next character without getting it.
         */
         int peek()
@@ -291,6 +267,7 @@ namespace NTTData.SitecoreCDN.Minifiers
             theLookahead = get();
             return theLookahead;
         }
+
         /* get -- return the next character from stdin. Watch out for lookahead. If
                 the character is a control character, translate it to a space or
                 linefeed.
@@ -303,28 +280,33 @@ namespace NTTData.SitecoreCDN.Minifiers
             {
                 c = sr.Read();
             }
+
             if (c >= ' ' || c == '\n' || c == EOF)
             {
                 return c;
             }
+
             if (c == '\r')
             {
                 return '\n';
             }
+
             return ' ';
         }
+
         void put(int c)
         {
             sw.Write((char)c);
         }
+
         /* isAlphanum -- return true if the character is a letter, digit, underscore,
                 dollar sign, or non-ASCII character.
         */
         bool isAlphanum(int c)
         {
-            return ((c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') ||
-                (c >= 'A' && c <= 'Z') || c == '_' || c == '$' || c == '\\' ||
-                c > 126);
+            return (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') ||
+                    (c >= 'A' && c <= 'Z') || c == '_' || c == '$' || c == '\\' ||
+                    c > 126;
         }
     }
 }

@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Sitecore.Common;
-
-namespace NTTData.SitecoreCDN.Switchers
+﻿namespace NTTData.SitecoreCDN.Switchers
 {
+    using Sitecore.Common;
+
     public class CDNUrlSwitcher : Switcher<CDNUrlState>
     {
         public CDNUrlSwitcher(CDNUrlState state) : base(state) { }

@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Sitecore.Diagnostics;
-
-namespace NTTData.SitecoreCDN.Util
+﻿namespace NTTData.SitecoreCDN.Util
 {
+    using System;
+    using Sitecore.Diagnostics;
+
     public class TimerReport : IDisposable
     {
         private HighResTimer _timer;
@@ -13,14 +10,14 @@ namespace NTTData.SitecoreCDN.Util
 
         public TimerReport(string name)
         {
-            _name = name;
-            _timer = new HighResTimer(true);
+            this._name = name;
+            this._timer = new HighResTimer(true);
         }
 
         public void Dispose()
         {
-            _timer.Stop();
-            System.Diagnostics.Debug.WriteLine(string.Format("{0} in {1}ms", _name, _timer.ElapsedTimeSpan.TotalMilliseconds));
+            this._timer.Stop();
+            System.Diagnostics.Debug.WriteLine(string.Format("{0} in {1}ms", this._name, this._timer.ElapsedTimeSpan.TotalMilliseconds));
         }
     }
 }

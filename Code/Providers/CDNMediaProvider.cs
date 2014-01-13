@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Sitecore.Resources.Media;
-using NTTData.SitecoreCDN.Switchers;
-using Sitecore.Text;
-
-namespace NTTData.SitecoreCDN.Providers
+﻿namespace NTTData.SitecoreCDN.Providers
 {
+    using NTTData.SitecoreCDN.Switchers;
+    using Sitecore.Resources.Media;
+    using Sitecore.Text;
+
     /// <summary>
     /// Extends MediaProvider to allow for CDN url replacement at the Provider level
     /// </summary>
@@ -44,7 +40,12 @@ namespace NTTData.SitecoreCDN.Providers
                 shouldReplace = false;
             }
 
-            
+            // NOTE: DOREL CHANGE: Do not process PDF. It will be processed in CDNProvider.ReplaceMediaUrls(HtmlDocument). http://targetprocess.colours.nl/entity/24810
+            if (item.Extension == "pdf")
+            {
+                shouldReplace = false;
+            }
+
             if (shouldReplace && !dontReplace) // media not DMS tracked
             {
                 return CDNManager.ReplaceMediaUrl(url, hostname);
